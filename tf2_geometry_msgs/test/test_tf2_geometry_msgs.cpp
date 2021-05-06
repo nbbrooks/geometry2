@@ -247,37 +247,30 @@ TEST(TfGeometry, Point)
   EXPECT_NEAR(v_advanced.point.z, 27, EPS);
 }
 
-TEST(TfGeometry, Quaternion)
+TEST(TfGeometry, Wrench)
 {
-  // rotated by -90° around y
-  // 0, 0, -1
-  // 0, 1, 0,
-  // 1, 0, 0
-  geometry_msgs::msg::QuaternionStamped q1, res;
-  q1.quaternion.x = 0;
-  q1.quaternion.y = -1 * M_SQRT1_2;
-  q1.quaternion.z = 0;
-  q1.quaternion.w = M_SQRT1_2;
-  q1.header.stamp = tf2_ros::toMsg(tf2::timeFromSec(2));
-  q1.header.frame_id = "A";
+  geometry_msgs::msg::Wrench v1, res;
+  v1.force.x = 2;
+  v1.force.y = 1;
+  v1.force.z = 3;
+  v1.torque.x = 2;
+  v1.torque.y = 1;
+  v1.torque.z = 3;
 
-  // simple api
-  const geometry_msgs::msg::QuaternionStamped q_simple = tf_buffer->transform(
-    q1, "B", tf2::durationFromSec(
-      2.0));
-  EXPECT_NEAR(q_simple.quaternion.x, M_SQRT1_2, EPS);
-  EXPECT_NEAR(q_simple.quaternion.y, 0, EPS);
-  EXPECT_NEAR(q_simple.quaternion.z, -1 * M_SQRT1_2, EPS);
-  EXPECT_NEAR(q_simple.quaternion.w, 0, EPS);
+  geometry_msgs::msg::TransformStamped trafo;
+  trafo.transform.translation.x = -1;
+  trafo.transform.translation.y = 2;
+  trafo.transform.translation.z = -3;
+  trafo.transform.rotation = tf2::toMsg(tf2::Quaternion(tf2::Vector3(0,0,1), -M_PI / 2.0));
 
-  // advanced api
-  const geometry_msgs::msg::QuaternionStamped q_advanced = tf_buffer->transform(
-    q1, "B", tf2::timeFromSec(2.0),
-    "A", tf2::durationFromSec(3.0));
-  EXPECT_NEAR(q_advanced.quaternion.x, M_SQRT1_2, EPS);
-  EXPECT_NEAR(q_advanced.quaternion.y, 0, EPS);
-  EXPECT_NEAR(q_advanced.quaternion.z, -1 * M_SQRT1_2, EPS);
-  EXPECT_NEAR(q_advanced.quaternion.w, 0, EPS);
+  tf2::doTransform(v1, res, trafo);
+  EXPECT_NEAR(res.force.x, 1, EPS);
+  EXPECT_NEAR(res.force.y, -2, EPS);
+  EXPECT_NEAR(res.force.z, 3, EPS);
+
+  EXPECT_NEAR(res.torque.x, 1, EPS);
+  EXPECT_NEAR(res.torque.y, -2, EPS);
+  EXPECT_NEAR(res.torque.z, 3, EPS);
 }
 
 
